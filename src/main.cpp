@@ -35,8 +35,8 @@ CTxMemPool mempool;
 unsigned int nTransactionsUpdated = 0;
 
 map<uint256, CBlockIndex*> mapBlockIndex;
-uint256 hashGenesisBlock("0x00000e1eb16b9b86589e10955d0248dfab2d335d7fa9f567f6fe1f4a17fafc3a");
-static const unsigned int timeGenesisBlock = 1415981997;
+uint256 hashGenesisBlock("0x000005042e41a89f3f8d69e497e53aaf2a1b3c47711fea7b4f98120b2ca0b34b");
+static const unsigned int timeGenesisBlock = 1419253070;
 static CBigNum bnProofOfWorkLimit(~uint256(0) >> 20);
 CBlockIndex* pindexGenesisBlock = NULL;
 int nBestHeight = -1;
@@ -1079,10 +1079,10 @@ uint256 static GetOrphanRoot(const CBlockHeader* pblock)
 }
 
 #define BLOCKS_MINING_VIA_MINUTE 4
-static const int64 nGenesisBlockRewardCoin = 2 * COIN;
-static const int64 nBlockRewardStartCoin = 2 * COIN;
-static const int64 nBlockRewardMinimumCoin = 0.000000000000000000000000001 * COIN;
-static const int64 nTargetTimespan = ((60*60)*24)*14; // 60*60 //60 minutes
+static const int64 nGenesisBlockRewardCoin = 0.10 * COIN;
+static const int64 nBlockRewardStartCoin = 0.10 * COIN;
+static const int64 nBlockRewardMaximumCoin = 10000 * COIN;
+static const int64 nTargetTimespan = 60*60; // 60*60 //60 minutes
 static const int64 nTargetSpacing = 60; // 60 //60 seconds
 static const int64 nInterval = nTargetTimespan / nTargetSpacing; // 20 blocks
 static const int64 nTargetTimespanRe = 60*10000; // 60*60 //60 minutes
@@ -1093,12 +1093,12 @@ static bool isCheater = false;
 
 int64 static GetBlockValue(int nHeight, int64 nFees, unsigned int nBits)
 {
-    if (nHeight == 1)
+    if (nHeight == 0)
     {
-        return nGenesisBlockRewardCoin + nGenesisBlockRewardCoin;
+        return nGenesisBlockRewardCoin;
     }
     
-	if ( btcryLastKHashRate >= 300  && isCheater == false)
+	/*if ( btcryLastKHashRate >= 300  && isCheater == false)
 	{
 		//int64 * my = (int 64 *)&nTargetTimespan;
 		//*my=nTargetTimespanRe;
@@ -1110,25 +1110,13 @@ int64 static GetBlockValue(int nHeight, int64 nFees, unsigned int nBits)
 		return 0;
 	} else if ( isCheater == true ) {
 		return 0;
-	}
+	}*/
     int64 nSubsidy = nBlockRewardStartCoin;
 	
-	if(nHeight > 0 && nHeight < 70000)
-	{
-		nSubsidy = nBlockRewardMinimumCoin;
-	} else if (nHeight == 70000) {
-		nSubsidy = nBlockRewardStartCoin;
-	} else if (nHeight > 70000 && nHeight < 140000)
-	{
-		nSubsidy = nBlockRewardMinimumCoin;
-	} else if (nHeight == 140000) {
-		nSubsidy = nBlockRewardStartCoin;
-	} else if (nHeight % 980000 == 0 && nHeight / 980000 <= 1000000000) {
-		nSubsidy = 0.000000001 * COIN;
-	} else {
-		nSubsidy = 0.0000000000000000000000000000000000001 * COIN;
-	}
+	nSubsidy <<= (nHeight/80640);
 
+	if(nSubsidy>nBlockRewardMaximumCoin)
+		nSubsidy = nBlockRewardMaximumCoin;
     return nSubsidy;
 }
 
@@ -1160,7 +1148,7 @@ unsigned int ComputeMinWork(unsigned int nBase, int64 nTime)
 unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock)
 {	
     unsigned int nProofOfWorkLimit = bnProofOfWorkLimit.GetCompact();
-	int64 lastHeight = pindexLast->nHeight+1;
+	//int64 lastHeight = pindexLast->nHeight+1;
     // Genesis block
     if (pindexLast == NULL)
         return nProofOfWorkLimit;
@@ -2767,7 +2755,7 @@ bool LoadBlockIndex()
         pchMessageStart[1] = 0x1A;
         pchMessageStart[2] = 0x39;
         pchMessageStart[3] = 0xF8;	  
-        hashGenesisBlock = uint256("0x00000e1eb16b9b86589e10955d0248dfab2d335d7fa9f567f6fe1f4a17fafc3a");
+        hashGenesisBlock = uint256("0x000005042e41a89f3f8d69e497e53aaf2a1b3c47711fea7b4f98120b2ca0b34b");
     }
 
     //
@@ -2816,7 +2804,7 @@ CBlock(hash=00000e5e37c42d6b67d0934399adfb0fa48b59138abb1a8842c88f4ca3d4ec96, ve
 
         // Genesis block
 		const char* oldpszTimestamp = "Jan 3th 2014. NSA developing code-cracking quantum computer. Fck!";
-        const char* pszTimestamp = "Nov 14th 2014. Downing Street presses ISPs over anti-terror measures. Fck!";
+        const char* pszTimestamp = "Dec 22th 2014. Jail term for Silk Road bitcoin deals. Fck!";
         CTransaction txNew;
         txNew.vin.resize(1);
         txNew.vout.resize(1);
@@ -2830,12 +2818,12 @@ CBlock(hash=00000e5e37c42d6b67d0934399adfb0fa48b59138abb1a8842c88f4ca3d4ec96, ve
         block.nVersion = 112;
         block.nTime    = timeGenesisBlock;
         block.nBits    = bnProofOfWorkLimit.GetCompact();
-        block.nNonce   = 14151997;
+        block.nNonce   = 14193070;
 
         if (fTestNet)
         {
-            block.nTime    = 1415981997;
-            block.nNonce   = 14151997;
+            block.nTime    = 1419253070;
+            block.nNonce   = 14193070;
         }
 
         //// debug print
@@ -2849,7 +2837,7 @@ CBlock(hash=00000e5e37c42d6b67d0934399adfb0fa48b59138abb1a8842c88f4ca3d4ec96, ve
         printf("%s\n", hashGenesisBlock.ToString().c_str());
         printf("%s\n", block.hashMerkleRoot.ToString().c_str());
         block.print();
-        assert(block.hashMerkleRoot == uint256("0x681a3c341505fc7efaf157adcbeec5b37d42e0e9893c13abe3554e4ab33632f6"));
+        assert(block.hashMerkleRoot == uint256("0xf9d22ebbfde1103b5c4fcdea8a3e1e0fede694e0196c443ce1335b27ce772978"));
         assert(hash == hashGenesisBlock);
 
         // Start new block file
@@ -4707,7 +4695,7 @@ void static BitcoinMiner(CWallet *pwallet)
                         //if (GetTime() - nLogTime > 30 * 60)
                         //{
                             // nLogTime = GetTime();
-                            btcryLastKHashRate = dHashesPerSec/1000.0;
+                            //btcryLastKHashRate = dHashesPerSec/1000.0;
 							printf("hashmeter %6.0f khash/s\n", btcryLastKHashRate);
                         //}
                     }
